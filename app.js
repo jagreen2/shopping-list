@@ -1,29 +1,41 @@
+
+//state management
+
 var state = {
   items: []
 };
 
-var listForm = '#js-shopping-list-form';
-$(listForm).submit(function(event){
-	event.preventDefault();
-	var listEntry = ($('#shopping-list-entry').val());
-	state.items.push({
-		name: listEntry,
-		isComplete: false
-	});
-	
-	var shoppingList = $('.shopping-list');
-	createShoppingList(shoppingList, state.items)
-})
+var shoppingList = $('.shopping-list');
 
-function createShoppingList(shoppingList, stuff){
+var listForm = '#js-shopping-list-form';
+
+
+function addItemToState(item) {
+	state.items.push(item);
+}
+
+function toggleChecked(index) {
+	var item = state.items[index];
+	item.isComplete = !item.isComplete;
+}
+
+function deleteItem(index) {
+	state.items.splice(index, 1);
+}
+//DOM manipulation
+
+function renderShoppingList(shoppingList, stuff){
+	shoppingList.html('');
 	stuff.forEach(function(item){
 		shoppingList.append(createLi(item));
 	}) 
 }
 
+
 function createLi(item){
-	return `<li>
-        <span class="shopping-item">${item.name}</span>
+	var isComplete = item.isComplete ? 'shopping-item__checked' : '';
+	return `<li class="li">
+        <span class="shopping-item ${isComplete}">${item.name}</span>
         <div class="shopping-item-controls">
           <button class="shopping-item-toggle">
             <span class="button-label">check</span>
@@ -36,22 +48,27 @@ function createLi(item){
 
 }
 
-$('.shopping-item-toggle').click(function(event){
-	$('.shopping-item').addClass('shopping-item__checked');
-})
-
-
-//state management
-
-
-
-//DOM manipulation
-
-
 
 // Event listeners
 
 
 $(function() {
-		
+	$(listForm).submit(function(event){
+		event.preventDefault();
+		var listEntry = ($('#shopping-list-entry').val());
+		addItemToState({name: listEntry, isComplete: false});
+		renderShoppingList(shoppingList, state.items)
+	})
+
+	$('ul').on('click', '.shopping-item-toggle', function(event){
+		toggleChecked($(this.parentElement.parentElement).index());
+		renderShoppingList(shoppingList, state.items);
+	});
+
+
+	$('ul').on('click', '.shopping-item-delete', function(event) {
+		deleteItem($(this.parentElement.parentElement).index());
+		renderShoppingList(shoppingList, state.items);
+	});
+
 });
